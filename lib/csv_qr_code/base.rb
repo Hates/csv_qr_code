@@ -1,4 +1,5 @@
-require 'rqrcode_png'
+require 'rqrcode'
+require 'rqrcode/export/png'
 require 'csv'
 
 module CsvQrCode
@@ -18,9 +19,8 @@ module CsvQrCode
     def generate
       CSV.foreach(@csv_file) do |row|
         next if empty_row?(row)
-        puts "Generating QR code for: #{row[0]}"
-        qr = RQRCode::QRCode.new row[0], size: 8, level: :h
-        qr.to_img.resize(@width, @height).save(File.join(@output_dir, "#{row[1]}.png"))
+        puts "Generating QR code for: '#{row[0]}'"
+        RQRCode::QRCode.new(row[0].to_s, size: 4, level: :l).as_png(resize_exactly_to: 600, border_modules: 0, file: File.join(@output_dir, "#{row[1]}.png"))
       end
     end
 

@@ -19,8 +19,20 @@ module CsvQrCode
     def generate
       CSV.foreach(@csv_file) do |row|
         next if empty_row?(row)
-        puts "Generating QR code for: '#{row[0]}'"
-        RQRCode::QRCode.new(row[0].to_s, size: 4, level: :l).as_png(resize_exactly_to: 600, border_modules: 0, file: File.join(@output_dir, "#{row[1]}.png"))
+        size = 2
+        puts "Generating QR code with size #{size} for: '#{row[0].to_s.strip}'"
+        begin
+          RQRCode::QRCode.new(row[0].to_s.strip, size: size, level: :l).as_png(resize_exactly_to: 600, border_modules: 0, file: File.join(@output_dir, "#{row[1]}.png"))
+        rescue => e
+          size += 1
+          if size <= 8
+            puts "Retrying QR code with size #{size} for: '#{row[0]}'"
+            retry
+          else
+            raise e
+          end
+        end
+        puts "----"
       end
     end
 
